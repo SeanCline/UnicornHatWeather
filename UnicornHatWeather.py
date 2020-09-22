@@ -43,17 +43,30 @@ atexit.register(cleanup)
 
 def main():
     global proc
+    last_update_time = float('-inf')
+    images_paths = []
+    
     while True:
-        images_paths = get_weather_images()
+        # Update the image list if the weather_update_time has passed.
+        try:
+            if (time.monotonic() - last_update_time) >= config.weather_update_time:
+                images_paths = get_weather_images()
+                last_update_time = time.monotonic()
+        except Exception as ex:
+            print("Error updating weather:", ex)
+            time.sleep(config.image_time) # Don't update too fast on error.
         
         # Loop over and display the images.
-        for image in images_paths:
-            print('Displaying:', image, 'Time:', config.image_time)
-            if proc is not None:
-                proc.terminate()
-            proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat', image, config.image_brightness, config.image_orientation])
-            time.sleep(config.image_time)
-
+        try:
+            for image in images_paths:
+                print('Displaying:', image, 'Time:', config.image_time)
+                if proc is not None:
+                    proc.terminate()
+                proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat', image, config.image_brightness, config.image_orientation])
+                time.sleep(config.image_time) # Sleep while the image is displayed.
+        except Exception as ex:
+            print("Error updating display:", ex)
+            time.sleep(config.image_time) # Don't update too fast on error.
 
 if __name__ == "__main__":
     main()
