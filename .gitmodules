@@ -1,0 +1,4 @@
+[submodule "Gif2UnicornHat"]
+	path = Gif2UnicornHat
+	url = https://github.com/SeanCline/Gif2UnicornHat.git
+	branch = master
