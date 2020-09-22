@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import os, time, subprocess, atexit
 import weather_conditions, temperature_image, config
-from typing import List, Any
+from typing import List
 
 
 # Returns a list of images filenames that fit the current weather conditions.
-def get_weather_images() -> List[Any]:
+def get_weather_images() -> List[str]:
     # Get the current conditions.
     conditions = weather_conditions.get_current_weather_conditions(config.weather_config)
     print(conditions)
@@ -14,7 +14,7 @@ def get_weather_images() -> List[Any]:
     conditions_icon_path = os.path.join('./icons/', conditions.icon + '.gif')
     
     # Temperature image.
-    cur_temp = int(conditions.temperature)
+    cur_temp = round(conditions.temperature)
     
     # Create cache file if it doesn't already exist.
     temperature_image_path = os.path.join(config.cache_dir, str(cur_temp) + '.gif')
@@ -23,6 +23,7 @@ def get_weather_images() -> List[Any]:
             os.mkdir(config.cache_dir)
             
         # Put the image in the cache.
+        print("Creating new image. image=", temperature_image_path)
         img = temperature_image.create_temperature_image(cur_temp)
         img.save(temperature_image_path)
     
