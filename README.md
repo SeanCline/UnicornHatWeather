@@ -3,6 +3,9 @@ UnicornHatWeather
 
 Displays the current weather conditions on a [Pimoroni UnicornHat](https://shop.pimoroni.com/products/unicorn-hat).
 
+![](docs/night.jpg)
+![](docs/night_temp.jpg)
+
 # Installation #
 These instructions assume a fresh installation of [Raspberry Pi OS Buster](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
 
