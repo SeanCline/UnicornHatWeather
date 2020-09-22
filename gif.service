@@ -1,0 +1,11 @@
+[Unit]
+Description=Gif
+After=multi-user.target
+
+[Service]
+Type=idle
+WorkingDirectory=/home/pi/UnicornHatWeather/
+ExecStart=/usr/bin/python3 ./UnicornHatWeather.py
+
+[Install]
+WantedBy=multi-user.target

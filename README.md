@@ -25,3 +25,10 @@ Set your [OpenWeatherMap API key](https://openweathermap.org/appid).
 
 # Usage #
 	sudo ./UnicornHatWeather.py
+
+# Automatic startup #
+In order to start the weather display whenever the Raspberry Pi is booted, run the following:
+
+	sudo cp gif.service /etc/systemd/system/gif.service
+	sudo systemctl daemon-reload
+	sudo systemctl enable gif.service
