@@ -62,7 +62,7 @@ def main():
                 print('Displaying:', image, 'Time:', config.image_time)
                 if proc is not None:
                     proc.terminate()
-                proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat', image, config.image_brightness, config.image_orientation])
+                proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat', image, str(config.image_brightness), str(config.image_orientation)])
                 time.sleep(config.image_time) # Sleep while the image is displayed.
         except Exception as ex:
             print("Error updating display:", ex)
