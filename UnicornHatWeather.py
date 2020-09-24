@@ -44,21 +44,22 @@ atexit.register(cleanup)
 def main():
     global proc
     last_update_time = float('-inf')
-    images_paths = []
+    image_paths = []
     
     while True:
         # Update the image list if the weather_update_time has passed.
         try:
             if (time.monotonic() - last_update_time) >= config.weather_update_time:
-                images_paths = get_weather_images()
+                image_paths = get_weather_images()
                 last_update_time = time.monotonic()
         except Exception as ex:
             print("Error updating weather:", ex)
+            image_paths = ['./icons/error.gif'] # Let the user know something went wrong.
             time.sleep(config.image_time) # Don't update too fast on error.
         
         # Loop over and display the images.
         try:
-            for image in images_paths:
+            for image in image_paths:
                 print('Displaying:', image, 'Time:', config.image_time)
                 if proc is not None:
                     proc.terminate()
@@ -74,8 +75,8 @@ if __name__ == "__main__":
 
 #from PIL import Image
 #if __name__ == "__main__":
-#    images_paths = get_weather_images()
-#    for path in images_paths:
+#    image_paths = get_weather_images()
+#    for path in image_paths:
 #        img = Image.open(path)
 #        img.show()
     
