@@ -22,9 +22,9 @@ These instructions assume a fresh installation of [Raspberry Pi OS Buster](https
 	sudo pip3 install -r requirements.txt
 
 ## Configuration ##
-Open `config.py`
-Update the your zipcode.
-Set your [OpenWeatherMap API key](https://openweathermap.org/appid).
+ - [Sign up](https://home.openweathermap.org/users/sign_up) for OpenWeatherMap and retrieve your API key from [here](https://home.openweathermap.org/api_keys).
+ - Open `config.py` and replace `YOUR_OPENWEATHERMAP_API_KEY` with your API key.
+ - Set your city by either updating the zip code or by using one of the other formats for defining your city.
 
 # Usage #
 	sudo ./UnicornHatWeather.py

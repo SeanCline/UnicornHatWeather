@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-import urllib.request, json
+import urllib.request, urllib.parse, json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
 
-# Use the configuration parameters to generate the request URL.
 def get_weather_url(weather_config : dict):
-    return f'https://api.openweathermap.org/data/2.5/weather?appid={weather_config["api_key"]}&zip={weather_config["zip_code"]}&units={weather_config["units"]}'
+    """Use the configuration parameters to generate the request URL."""
+    return 'https://api.openweathermap.org/data/2.5/weather?' + urllib.parse.urlencode(weather_config)
 
 
-# Describes a set of weather conditions at a particular point in time.
+
 @dataclass
 class WeatherConditions(object):
+    """Describes a set of weather conditions at a particular point in time."""
     temperature: float
     pressure: float
     humidity: float
@@ -20,8 +21,8 @@ class WeatherConditions(object):
     time: datetime
 
 
-# Retrieves the current WeatherConditions from the web.
 def get_current_weather_conditions(weather_config) -> WeatherConditions:
+    """Retrieves the current WeatherConditions from the web."""
     url = get_weather_url(weather_config)
     request = urllib.request.urlopen(url)
     body = json.load(request)

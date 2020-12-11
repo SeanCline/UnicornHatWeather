@@ -1,14 +1,17 @@
-
-# Weather configuration parameters.
+# Weather configuration parameters. See: https://openweathermap.org/current
 weather_config = {
-    'api_key': 'YOUR_API_KEY',
-    'zip_code': '44094',
-    'units': 'imperial',
+    'appid': 'YOUR_OPENWEATHERMAP_API_KEY',
+    'units': 'imperial', # 'imperial' or 'metric'
+    'zip': '44094', # zip code
+    
+# If in a region without a zip code, comment the zip line above and uncomment one of the following:
+    # 'q': 'Willoughby, OH, USA',
+    # 'lat': '41.63', 'lon': '-81.41',
 }
 
-# Control which temperatures will be displayed cold (blue) and hot (red)
-cold_temperature = 32 # If Celsius, 0 is a decent choice.
-hot_tempertature = 99 # If Celsius, 38 is a decent choice.
+# Control which temperatures will be displayed cold (blue) and hot (red).
+cold_temperature = 32 # If Celsius, 0 is a decent choice. If Fahrenheit, 32.
+hot_tempertature = 99 # If Celsius, 38 is a decent choice. If Fahrenheit, 99.
 
 weather_update_time = 300 # Seconds until refreshing weather data.
 image_time = 20 # Seconds to display each image.

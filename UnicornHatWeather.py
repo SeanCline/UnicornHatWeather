@@ -4,8 +4,8 @@ import weather_conditions, temperature_image, config
 from typing import List
 
 
-# Returns a list of images filenames that fit the current weather conditions.
 def get_weather_images() -> List[str]:
+    """Returns a list of images filenames that fit the current weather conditions."""
     # Get the current conditions.
     conditions = weather_conditions.get_current_weather_conditions(config.weather_config)
     print(conditions)
@@ -29,10 +29,10 @@ def get_weather_images() -> List[str]:
     
     return [conditions_icon_path, temperature_image_path]
 
-
-# Keep track of the currently open process so we can exit gracefully.
+# Register a cleanup function that terminates subprecesses.
 proc = None
 def cleanup():
+    """Keep track of the currently open process so we can exit gracefully."""
     global proc
     if proc is not None:
         proc.terminate()
@@ -42,6 +42,7 @@ atexit.register(cleanup)
 
 
 def main():
+    """Entrypoint for the program."""
     global proc
     last_update_time = float('-inf')
     image_paths = []
