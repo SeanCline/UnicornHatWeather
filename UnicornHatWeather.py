@@ -2,9 +2,15 @@
 import os, time, subprocess, atexit
 import weather_conditions, temperature_image, config
 from typing import List
+from dataclasses import dataclass
 
+@dataclass
+class GifFrame:
+    """Represents Gif, shown for a period of time."""
+    filename: str
+    show_time: float
 
-def get_weather_images() -> List[str]:
+def get_weather_images() -> List[GifFrame]:
     """Returns a list of images filenames that fit the current weather conditions."""
     # Get the current conditions.
     conditions = weather_conditions.get_current_weather_conditions(config.weather_config)
@@ -23,11 +29,15 @@ def get_weather_images() -> List[str]:
             os.mkdir(config.cache_dir)
             
         # Put the image in the cache.
-        print("Creating new image. image=", temperature_image_path)
+        print('Creating new image. image=', temperature_image_path)
         img = temperature_image.create_temperature_image(cur_temp)
         img.save(temperature_image_path)
     
-    return [conditions_icon_path, temperature_image_path]
+    return [
+        GifFrame(conditions_icon_path, config.condition_show_time),
+        GifFrame(temperature_image_path, config.temperature_show_time),
+    ]
+
 
 # Register a cleanup function that terminates subprecesses.
 proc = None
@@ -41,43 +51,49 @@ def cleanup():
 atexit.register(cleanup)
 
 
+def show_frames(frames: List[GifFrame]):
+    """Loops over the frames and shows each for the given show time."""
+    global proc
+    try:
+        for frame in frames:
+            print('Displaying:', frame.filename, 'Time:', frame.show_time)
+            if proc is not None:
+                proc.terminate()
+            proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat', frame.filename, str(config.image_brightness), str(config.image_orientation)])
+            time.sleep(frame.show_time) # Sleep while the image is displayed.
+    except Exception as ex:
+        print('Error updating display:', ex)
+        time.sleep(config.retry_time) # Don't update too fast on error.
+
+
 def main():
     """Entrypoint for the program."""
-    global proc
     last_update_time = float('-inf')
-    image_paths = []
+    frames = []
     
     while True:
         # Update the image list if the weather_update_time has passed.
         try:
             if (time.monotonic() - last_update_time) >= config.weather_update_time:
-                image_paths = get_weather_images()
+                frames = get_weather_images()
                 last_update_time = time.monotonic()
         except Exception as ex:
-            print("Error updating weather:", ex)
-            image_paths = ['./icons/error.gif'] # Let the user know something went wrong.
-            time.sleep(config.image_time) # Don't update too fast on error.
+            print('Error updating weather:', ex)
+            # Let the user know something went wrong.
+            frames = [GifFrame('./icons/error.gif', config.retry_time)]
         
         # Loop over and display the images.
-        try:
-            for image in image_paths:
-                print('Displaying:', image, 'Time:', config.image_time)
-                if proc is not None:
-                    proc.terminate()
-                proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat', image, str(config.image_brightness), str(config.image_orientation)])
-                time.sleep(config.image_time) # Sleep while the image is displayed.
-        except Exception as ex:
-            print("Error updating display:", ex)
-            time.sleep(config.image_time) # Don't update too fast on error.
+        show_frames(frames)
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
 
 
 #from PIL import Image
 #if __name__ == "__main__":
-#    image_paths = get_weather_images()
-#    for path in image_paths:
-#        img = Image.open(path)
+#    frames = get_weather_images()
+#    for frame in frames:
+#        img = Image.open(frame.filename)
 #        img.show()
     
