@@ -1,7 +1,7 @@
 UnicornHatWeather
 ==============
 
-Displays the current weather conditions on a [Pimoroni UnicornHat](https://shop.pimoroni.com/products/unicorn-hat).
+Displays the current weather conditions on a [Pimoroni Unicorn HAT](https://shop.pimoroni.com/products/unicorn-hat) or [Unicorn HAT HD](https://shop.pimoroni.com/products/unicorn-hat-hd).
 
 ![](docs/night.jpg)
 ![](docs/night_temp.jpg)
@@ -10,6 +10,9 @@ Displays the current weather conditions on a [Pimoroni UnicornHat](https://shop.
 These instructions assume a fresh installation of [Raspberry Pi OS Buster](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
 
 ## Install dependencies ##
+
+	sudo apt update
+	sudo apt dist-upgrade
 	sudo apt install build-essential git libgif-dev scons python python3-pip libopenjp2-7 libtiff5
 
 ## Clone and build ##

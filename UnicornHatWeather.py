@@ -59,7 +59,11 @@ def show_frames(frames: List[GifFrame]):
             print('Displaying:', frame.filename, 'Time:', frame.show_time)
             if proc is not None:
                 proc.terminate()
-            proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat', frame.filename, str(config.image_brightness), str(config.image_orientation)])
+            proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat',
+                '-d', config.hat_device,
+                frame.filename,
+                str(config.image_brightness),
+                str(config.image_orientation)])
             time.sleep(frame.show_time) # Sleep while the image is displayed.
     except Exception as ex:
         print('Error updating display:', ex)
