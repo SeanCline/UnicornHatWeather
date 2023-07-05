@@ -38,15 +38,24 @@ def get_weather_images() -> List[GifFrame]:
         GifFrame(temperature_image_path, config.temperature_show_time),
     ]
 
+def terminate_proc(proc, graceful_timeout=5000):
+    if proc is None:
+        return
+    
+    proc.terminate()
+    try:
+        outs, errs = proc.communicate(timeout=graceful_timeout)
+    except subprocess.TimeoutExpired:
+        print('Process took took long to exit. Killing process.')
+        proc.kill()
 
 # Register a cleanup function that terminates subprecesses.
 proc = None
 def cleanup():
     """Keep track of the currently open process so we can exit gracefully."""
     global proc
-    if proc is not None:
-        proc.terminate()
-        proc = None
+    terminate_proc(proc)
+    proc = None
 
 atexit.register(cleanup)
 
@@ -57,8 +66,7 @@ def show_frames(frames: List[GifFrame]):
     try:
         for frame in frames:
             print('Displaying:', frame.filename, 'Time:', frame.show_time)
-            if proc is not None:
-                proc.terminate()
+            terminate_proc(proc)
             proc = subprocess.Popen(['./Gif2UnicornHat/Gif2UnicornHat',
                 '-d', config.hat_device,
                 frame.filename,
