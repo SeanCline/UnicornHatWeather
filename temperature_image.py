@@ -47,9 +47,11 @@ def apply_color_filter_to_image(base_img, color):
 
 # Creates an 8x8 image with the current temperature on it.
 def create_temperature_image(temperature : int):
-    temp_str = str(temperature).zfill(2)
+    temp_str = str(temperature)
+    if config.leading_zero_char is not None:
+        temp_str = temp_str.rjust(2, config.leading_zero_char)
 
-    # If the string is tool long to draw, then show a different icon.
+    # If the string is too long to draw, then show a different icon.
     if len(temp_str) > 2:
         img = Image.open('icons/cold.gif') if (temperature < 0) else Image.open('icons/hot.gif')
         return img.convert('RGB')

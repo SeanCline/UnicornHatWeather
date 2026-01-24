@@ -2,7 +2,7 @@
 weather_config = {
     'appid': 'YOUR_OPENWEATHERMAP_API_KEY',
     'units': 'imperial', # 'imperial' or 'metric'
-    'zip': '44094', # zip code
+    'zip': '44060', # zip code
     
 # If in a region without a zip code, comment the zip line above and uncomment one of the following:
     # 'q': 'Willoughby, OH, USA',
@@ -21,3 +21,4 @@ image_brightness = .02 # Brightness to display the images. 0.0 to 1.0
 image_orientation = 0 # Rotates the image so the device can be mounted in a rotated orientation. Values: 0, 1, 2, or 3.
 hat_device = 'Unicorn HAT' # Which LED matrix is connected. Options: 'Unicorn HAT' or 'Unicorn HAT HD'
 cache_dir = './temperature_images/' # Define an image cache that will be used to keep from re-generating gifs.
+leading_zero_char = ' ' # Set to '0' for temperatures to always be 2 digits.

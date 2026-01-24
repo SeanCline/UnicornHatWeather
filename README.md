@@ -12,7 +12,7 @@ These instructions assume a fresh installation of [Raspberry Pi OS Buster](https
 ## Install dependencies ##
 
 	sudo apt update
-	sudo apt dist-upgrade
+	sudo apt full-upgrade
 	sudo apt install build-essential git libgif-dev scons python python3-pip libopenjp2-7 libtiff5
 
 ## Clone and build ##
