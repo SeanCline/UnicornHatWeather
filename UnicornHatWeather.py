@@ -5,6 +5,8 @@ from dataclasses import dataclass
 import temperature_image, config
 from WeatherCollectors.WeatherCollector import WeatherStatus
 from WeatherCollectors.OpenWeatherMapCollector import OpenWeatherMapCollector
+from WeatherCollectors.TempestUdpCollector import TempestUdpCollector
+from WeatherCollectors.AggregateCollector import AggregateCollector
 
 @dataclass
 class GifFrame:
@@ -98,9 +100,13 @@ async def main():
         frames.extend(get_weather_images(status))
 
     # Periocidcally update the image frames with fresh weather data.
-    owmcollector = OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval)
-    owmcollector.register_callback(lambda status: update_frames(status))
-    listenTask = asyncio.create_task(owmcollector.start_listening()) # Run the collector as a background task.
+    collector = AggregateCollector([
+        TempestUdpCollector(config.tempest_udp_config),
+        OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval)
+    ])
+
+    collector.register_callback(lambda status: update_frames(status))
+    listenTask = asyncio.create_task(collector.start_listening()) # Run the collector as a background task.
 
     while True:
         try:
@@ -108,7 +114,7 @@ async def main():
             await show_frames(frames if len(frames) > 0 else [GifFrame('./icons/error.gif', config.retry_time)])
         except KeyboardInterrupt: # TODO: SystemExit?
             print('Exiting...')
-            await owmcollector.stop_listening() # Clean up the collector when exiting.
+            await collector.stop_listening() # Clean up the collector when exiting.
             await listenTask # Wait for listening to stop.
             await terminate_proc(proc)
             break
@@ -116,7 +122,7 @@ async def main():
             print('Error updating weather:', ex)
             frames.clear() # Let the user know something went wrong by displaying the error icon on the next loop.
         
-    await owmcollector.stop_listening() # Clean up the collector when exiting.
+    await collector.stop_listening() # Clean up the collector when exiting.
     await listenTask # Wait for listening to stop.
 
 

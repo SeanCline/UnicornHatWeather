@@ -1,13 +1,24 @@
 # OpenWeatherMap configuration parameters. See: https://openweathermap.org/current
+# Comment out these owm_* lines to disable OpenWeatherMap data collection.
+owm_poll_interval = 300.0 # Seconds between refreshing weather data.
 owm_config = {
     'appid': 'YOUR_OPENWEATHERMAP_API_KEY',
     'zip': '44060', # zip code
     
 # If in a region without a zip code, comment the zip line above and uncomment one of the following:
-    # 'q': 'Willoughby, OH, USA',
-    # 'lat': '41.63', 'lon': '-81.41',
+#   'q': 'Willoughby, OH, USA',
+#   'lat': '41.63', 'lon': '-81.41',
 }
-owm_poll_interval = 300.0 # Seconds between refreshing weather data.
+
+# Weatherflow Tempest UDP configuration parameters. See: https://weatherflow.github.io/Tempest/api/udp/v144/
+# Comment out these tempest_udp_* lines to disable Tempest UDP data collection.
+tempest_udp_config = {
+# Uncomment any of the following lines to allow only specific hubs or stations. By default, data will be collected from all hubs and stations in the LAN.
+#   'allowed_hub_ips': ['192.168.2.156'], # Uncomment to allow weather only from specific hub IPs.
+#   'allowed_hub_sns': ['HB-00192149'], # Uncomment to allow weather only from specific station names.
+#   'allowed_station_sns': ['ST-00188648'], # Uncomment to allow weather only from specific station names.
+}
+
 
 # Control how tempuratures will be displayed and which temps map to cold (blue) and hot (red).
 tempurature_unit = 'F' # 'C' for Celsius, 'F' for Fahrenheit.
