@@ -32,7 +32,7 @@ def interpolate(x : float, src_range, dest_range):
 
 
 # Converts a Fahrenheit temperature into an associated RGBA colour. Blue for cold. Red for hot.
-def tempertature_to_color(temperature : float):
+def temperature_to_color(temperature : float):
     temp = clamp(temperature, config.cold_temperature, config.hot_tempertature) # Out of range should stay blue or red.
     hue = interpolate(temp, (config.cold_temperature, config.hot_tempertature), (0, .68)) # Convert temp to hue.
     color = colorsys.hsv_to_rgb(1-hue, 1.0, 1.0) # Convert hue to RGB.
@@ -59,7 +59,7 @@ def create_temperature_image(temperature : int):
     # Draw the temperature on top of the base image.
     img = Image.open('icons/degree_background.gif').convert('RGB')
     img = draw_msg_on_image(img, temp_str, 0, 3)
-    img = apply_color_filter_to_image(img, tempertature_to_color(temperature))
+    img = apply_color_filter_to_image(img, temperature_to_color(temperature))
     
     return img
 
@@ -69,6 +69,7 @@ if __name__ == "__main__":
     create_temperature_image(-10).show()
     create_temperature_image(-9).show()
     create_temperature_image(0).show()
+    create_temperature_image(5).show()
     create_temperature_image(10).show()
     create_temperature_image(20).show()
     create_temperature_image(30).show()

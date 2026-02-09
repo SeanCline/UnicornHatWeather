@@ -7,13 +7,13 @@ Displays the current weather conditions on a [Pimoroni Unicorn HAT](https://shop
 ![](docs/night_temp.jpg)
 
 # Installation #
-These instructions assume a fresh installation of [Raspberry Pi OS Buster](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
+These instructions assume a fresh installation of [Raspberry Pi OS Bullseye](https://www.raspberrypi.org/downloads/raspberry-pi-os/).
 
 ## Install dependencies ##
 
 	sudo apt update
 	sudo apt full-upgrade
-	sudo apt install build-essential git libgif-dev scons python python3-pip libopenjp2-7 libtiff5
+	sudo apt install build-essential git libgif-dev scons python python3-pip libopenjp2-7 libtiff5 libjpeg-dev
 
 ## Clone and build ##
 
