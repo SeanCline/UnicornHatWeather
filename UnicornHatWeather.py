@@ -7,6 +7,7 @@ from WeatherCollectors.WeatherCollector import WeatherStatus
 from WeatherCollectors.OpenWeatherMapCollector import OpenWeatherMapCollector
 from WeatherCollectors.TempestUdpCollector import TempestUdpCollector
 from WeatherCollectors.AggregateCollector import AggregateCollector
+from WeatherCollectors.TempestCloudCollector import TempestCloudCollector
 
 @dataclass
 class GifFrame:
@@ -108,6 +109,9 @@ async def main():
 
     if hasattr(config, 'owm_config') and hasattr(config, 'owm_poll_interval'):
         await collector.register_collector(OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval))
+
+    if  hasattr(config, 'tempest_cloud_station_name') and hasattr(config, 'tempest_cloud_token') and hasattr(config, 'tempest_cloud_poll_interval'):
+        await collector.register_collector(TempestCloudCollector(config.tempest_cloud_station_name, config.tempest_cloud_token, config.tempest_cloud_poll_interval))
 
     # Register a callback to update the images when new weather data is received.
     collector.register_callback(lambda status: update_frames(status))
