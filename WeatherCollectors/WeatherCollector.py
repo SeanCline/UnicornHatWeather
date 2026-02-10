@@ -6,7 +6,7 @@ from typing import Generic, Optional, TypeVar
 DatapointT = TypeVar("DatapointT")
 @dataclass
 class Datapoint(Generic[DatapointT]):
-    value: DatapointT = None
+    value: DatapointT
     quality: float = 0.0 # Negative for untrusted values, 0.0 for acceptable, positive for very reliable.
 
 

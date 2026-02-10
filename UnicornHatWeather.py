@@ -33,6 +33,7 @@ def get_weather_images(collector : WeatherStatus) -> List[GifFrame]:
         conditions_icon_path = './icons/error.gif' 
     
     # Temperature image.
+    temperature_image_path = None
     if collector.temp_c is not None:
         cur_temp = round(convert_c_to_unit(collector.temp_c.value, config.tempurature_unit))
 
@@ -99,12 +100,16 @@ async def main():
         frames.clear()
         frames.extend(get_weather_images(status))
 
-    # Periocidcally update the image frames with fresh weather data.
-    collector = AggregateCollector([
-        TempestUdpCollector(config.tempest_udp_config),
-        OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval)
-    ])
+    # Set up all the weather collectors that are configured.
+    collector = AggregateCollector()
 
+    if hasattr(config, 'tempest_udp_config'):
+        await collector.register_collector(TempestUdpCollector(config.tempest_udp_config))
+
+    if hasattr(config, 'owm_config') and hasattr(config, 'owm_poll_interval'):
+        await collector.register_collector(OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval))
+
+    # Register a callback to update the images when new weather data is received.
     collector.register_callback(lambda status: update_frames(status))
     listenTask = asyncio.create_task(collector.start_listening()) # Run the collector as a background task.
 

@@ -33,6 +33,7 @@ class OpenWeatherMapCollector(WeatherCollector):
             weather = body['weather'][0]
 
             status = WeatherStatus()
+            status.source = "openweathermap"
             status.host_timestamp = datetime.now(timezone.utc)
             status.source_timestamp = datetime.fromtimestamp(body['dt'], timezone.utc)
             status.temp_c = Datapoint(main['temp'], 0.5) # Quality is good, but not as good as a local sensor.
@@ -80,7 +81,8 @@ class OpenWeatherMapCollector(WeatherCollector):
         self._is_listening = False
 
 async def debug_status():
-    collector = OpenWeatherMapCollector()
+    import config
+    collector = OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval)
     await collector.start_listening()
     collector.register_callback(lambda status: print(status))
     # Run until a keyboard interrupt, then clean up.

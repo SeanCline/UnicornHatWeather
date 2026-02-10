@@ -28,6 +28,7 @@ hot_tempertature = 99 # If Celsius, 38 is a decent choice. If Fahrenheit, 99.
 condition_show_time = 10.0 # Seconds to display the condition icon.
 temperature_show_time = 15.0 # Seconds to display the temperature icon.
 retry_time = 15.0 # Seconds to wait before retrying when there's an error.
+datapoint_max_age = 900.0 # Maximum age of datapoints in seconds before they are considered stale and ignored.
 image_brightness = .02 # Brightness to display the images. 0.0 to 1.0
 image_orientation = 0 # Rotates the image so the device can be mounted in a rotated orientation. Values: 0, 1, 2, or 3.
 hat_device = 'Unicorn HAT' # Which LED matrix is connected. Options: 'Unicorn HAT' or 'Unicorn HAT HD'
