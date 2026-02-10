@@ -1,6 +1,7 @@
 import json
 import asyncio
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 from .WeatherCollector import WeatherCollector, WeatherStatus, Datapoint
 
 UDP_PORT = 50222
@@ -74,8 +75,9 @@ class TempestUdpCollector(WeatherCollector):
         self._udp_transport = None
         self._config = config
 
-    def _decode_precipitation(self, v):
-        return {1: "rain", 2: "hail", 3: "hail"}.get(v) # 3 == rain|hail, but it's experimental and rare, so just call it hail.
+    def _decode_precipitation(self, v) -> str:
+        """Converts the Weatherflow precipitation type code to a human readable string."""
+        return {0: "none", 1: "rain", 2: "hail", 3: "hail"}.get(v) or "none" # 3 == rain|hail, but it's experimental and rare, so just call it hail.
 
     def _handle_obs_air(self, obs, idx = OBS_AIR_IDX):
         self.status.source = "obs_air"
@@ -104,7 +106,7 @@ class TempestUdpCollector(WeatherCollector):
         self._handle_obs_sky(obs, idx = OBS_ST_IDX)
         self.status.source = "obs_st"
 
-    def _calculate_condition_string(self, ws : WeatherStatus) -> Datapoint[str]:
+    def _calculate_condition_string(self, ws : WeatherStatus) -> Optional[Datapoint[str]]:
         """
         Determines the condition_string based on the current readings.
         This is mostly a wild guess at the moment. Good condition estimates
@@ -139,14 +141,13 @@ class TempestUdpCollector(WeatherCollector):
                 else:
                     return None # If its completely dark outside, there's no way to know cloud cover.
 
-    def _calculate_openweathermap_icon(self, ws : WeatherStatus) -> Datapoint[str]:
+    def _calculate_openweathermap_icon(self, ws : WeatherStatus) -> Optional[Datapoint[str]]:
         """
         Use the condition_string to determines the closest openweathermap_icon.
         """
         if not ws.condition_string or not ws.condition_string.value:
             return None
         mapping = {
-            None: None,
             "clear sky": "01",
             "scattered clouds": "02",
             "cloudy": "03",
@@ -157,7 +158,7 @@ class TempestUdpCollector(WeatherCollector):
             "mist": "50",
         }
 
-        icon_number = mapping.get(ws.condition_string.value)
+        icon_number = mapping[ws.condition_string.value]
         icon_daynight = "d" if ws.illuminance_lux is None or ws.illuminance_lux.value > 5000 else "n"
         return Datapoint(icon_number + icon_daynight, ws.condition_string.quality)
 
@@ -250,7 +251,8 @@ class TempestUdpCollector(WeatherCollector):
 
 
 async def debug_status():
-    collector = TempestUdpCollector()
+    import config
+    collector = TempestUdpCollector(config.tempest_udp_config)
     await collector.start_listening()
     collector.register_callback(lambda status: print(status))
     # Run until a keyboard interrupt, then clean up.

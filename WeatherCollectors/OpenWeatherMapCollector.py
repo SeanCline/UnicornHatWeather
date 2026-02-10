@@ -28,35 +28,50 @@ class OpenWeatherMapCollector(WeatherCollector):
                 body = await response.json()
 
         if int(body['cod']) == 200:
-            main = body['main']
-            wind = body['wind']
-            weather = body['weather'][0]
+            main = body.get('main', {})
+            wind = body.get('wind', {})
+            weather = body.get('weather', [{}])[0] # Only interested in the primary weather object.
 
             status = WeatherStatus()
             status.source = "openweathermap"
             status.host_timestamp = datetime.now(timezone.utc)
-            status.source_timestamp = datetime.fromtimestamp(body['dt'], timezone.utc)
-            status.temp_c = Datapoint(main['temp'], 0.5) # Quality is good, but not as good as a local sensor.
-            status.humidity_pct = Datapoint(main['humidity'], 0.5)
-            status.pressure_mb = Datapoint(main['pressure'], 0.5)
-            status.wind_avg_mps = Datapoint(wind['speed'], .75) # I trust the OWM wind speed more than a ground-mounted sensor.
-            status.condition_string = Datapoint(weather['description'], 1.0) # Real weather services use FAR more reliable models for conditions than a local sensor.
-            status.openweathermap_icon = Datapoint(weather['icon'], 1.0)
+
+            if 'dt' in body:
+                status.source_timestamp = datetime.fromtimestamp(body['dt'], timezone.utc)
+
+            if 'temp' in main:
+                status.temp_c = Datapoint(main['temp'], 0.5) # Quality is good, but not as good as a local sensor.
+
+            if 'humidity' in main:
+                status.humidity_pct = Datapoint(main['humidity'], 0.5)
+            
+            if 'pressure' in main:
+                status.pressure_mb = Datapoint(main['pressure'], 0.5)
+
+            if 'speed' in wind:
+                status.wind_avg_mps = Datapoint(wind['speed'], .75) # I trust the OWM wind speed more than a ground-mounted sensor.
+            
+            if 'description' in weather:
+                status.condition_string = Datapoint(weather['description'], 1.0) # Real weather services use FAR more reliable models for conditions than a local sensor.
+
+            if 'icon' in weather:
+                status.openweathermap_icon = Datapoint(weather['icon'], 1.0)
             
             # Determine if it's precipitating based on the weather code.
             # See: https://openweathermap.org/weather-conditions
-            id = weather['id']
-            precip_type = ("rain" if id >= 200 and id < 400
-                else "rain" if id >= 500 and id < 600
-                else "snow" if id >= 600 and id < 700
-                else None)
-            if precip_type is not None:
-                quality = 0.0 if precip_type == "rain" else 0.75 # The rain values are worse than a local station, but snow is better.
-                status.precip_type = Datapoint(precip_type, quality)
+            if 'id' in weather:
+                id = weather['id']
+                precip_type = ("rain" if id >= 200 and id < 400
+                    else "rain" if id >= 500 and id < 600
+                    else "snow" if id >= 600 and id < 700
+                    else None)
+                if precip_type is not None:
+                    quality = 0.0 if precip_type == "rain" else 0.75 # The rain values are worse than a local station, but snow is better.
+                    status.precip_type = Datapoint(precip_type, quality)
 
-            if 'rain' in body and '1h' in body['rain']:
-                status.precip_type = Datapoint('rain', 0.75)
-                status.rain_mm = Datapoint(body['rain']['1h'], 0.75)
+                if 'rain' in body and '1h' in body['rain']:
+                    status.precip_type = Datapoint('rain', 0.75)
+                    status.rain_mm = Datapoint(body['rain']['1h'], 0.75)
 
             return status
         else:
@@ -81,10 +96,14 @@ class OpenWeatherMapCollector(WeatherCollector):
         self._is_listening = False
 
 async def debug_status():
+    import sys, os
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
     import config
+
     collector = OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval)
-    await collector.start_listening()
     collector.register_callback(lambda status: print(status))
+    await collector.start_listening()
+    
     # Run until a keyboard interrupt, then clean up.
     try:
         while True:
