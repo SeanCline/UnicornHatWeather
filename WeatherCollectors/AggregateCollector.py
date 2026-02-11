@@ -33,41 +33,10 @@ class AggregateCollector(WeatherCollector):
             self._collectors[c] = self.CollectorData(None, lambda status, c=c: self._update_collector_status(c, status)) # No data yet.
             c.register_callback(self._collectors[c].callback)
         self._quality_decay = quality_decay # Every second, reduce the quality of each datapoint by this amount.
-        self._is_listening = False
 
-    async def register_collector(self, collector : WeatherCollector):
-        """Registers a WeatherCollector as a source of data to aggregate."""
-        if collector in self._collectors.keys():
-            return # Already registered.
-        
-        self._collectors[collector] = self.CollectorData(None, lambda status: self._update_collector_status(collector, status)) # No data yet.
-        collector.register_callback(self._collectors[collector].callback)
-        if self._is_listening:
-            await collector.start_listening() # Start the collector if we're already listening for updates.
-
-    def unregister_collector(self, collector : WeatherCollector):
-        """Unregisters a WeatherCollector so it is no longer a source of data."""
-        if collector not in self._collectors.keys():
-            return # Not registered.
-        
-        collector.unregister_callback(self._collectors[collector].callback)
-        del self._collectors[collector]
-
-    async def start_listening(self):
+    async def listen(self):
         """Starts all registered collectors and begins delivering aggregate updates."""
-        if self._is_listening:
-            return # Already listening.
-        
-        self._is_listening = True
-        await asyncio.gather(*(collector.start_listening() for collector in self._collectors.keys()))
-
-    async def stop_listening(self):
-        """Stops all registered collectors and stops delivering updates."""
-        if not self._is_listening:
-            return # Not currently listening.
-        
-        self._is_listening = False
-        await asyncio.gather(*(collector.stop_listening() for collector in self._collectors.keys()))
+        await asyncio.gather(*(collector.listen() for collector in self._collectors.keys()))
 
     def _update_collector_status(self, collector : WeatherCollector, status : WeatherStatus):
         """Updates the status for a given collector and recomputes the aggregate status."""

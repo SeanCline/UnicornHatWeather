@@ -102,38 +102,44 @@ async def main():
         frames.extend(get_weather_images(status))
 
     # Set up all the weather collectors that are configured.
-    collector = AggregateCollector()
+    subCollectors = []
 
     if hasattr(config, 'tempest_udp_config'):
-        await collector.register_collector(TempestUdpCollector(config.tempest_udp_config))
+        subCollectors.append(TempestUdpCollector(config.tempest_udp_config))
 
     if hasattr(config, 'owm_config') and hasattr(config, 'owm_poll_interval'):
-        await collector.register_collector(OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval))
+        subCollectors.append(OpenWeatherMapCollector(config.owm_config, config.owm_poll_interval))
 
     if  hasattr(config, 'tempest_cloud_station_name') and hasattr(config, 'tempest_cloud_token') and hasattr(config, 'tempest_cloud_poll_interval'):
-        await collector.register_collector(TempestCloudCollector(config.tempest_cloud_station_name, config.tempest_cloud_token, config.tempest_cloud_poll_interval))
+        subCollectors.append(TempestCloudCollector(config.tempest_cloud_station_name, config.tempest_cloud_token, config.tempest_cloud_poll_interval))
+
+    aggregateCollector = AggregateCollector(subCollectors)
 
     # Register a callback to update the images when new weather data is received.
-    collector.register_callback(lambda status: update_frames(status))
-    listenTask = asyncio.create_task(collector.start_listening()) # Run the collector as a background task.
+    aggregateCollector.register_callback(lambda status: update_frames(status))
+    listenTask = asyncio.create_task(aggregateCollector.listen()) # Run the collector as a background task.
 
     while True:
         try:
             # Loop over and display the latest images.
-            await show_frames(frames if len(frames) > 0 else [GifFrame('./icons/error.gif', config.retry_time)])
-        except KeyboardInterrupt: # TODO: SystemExit?
+            latest_frames = frames if len(frames) > 0 else [GifFrame('./icons/error.gif', config.retry_time)]
+            await show_frames(latest_frames)
+        except KeyboardInterrupt:
             print('Exiting...')
-            await collector.stop_listening() # Clean up the collector when exiting.
-            await listenTask # Wait for listening to stop.
-            await terminate_proc(proc)
             break
         except Exception as ex:
             print('Error updating weather:', ex)
             frames.clear() # Let the user know something went wrong by displaying the error icon on the next loop.
-        
-    await collector.stop_listening() # Clean up the collector when exiting.
-    await listenTask # Wait for listening to stop.
 
+    # Cancel the listener and wait for it to clean up.    
+    listenTask.cancel()
+    try:
+        await listenTask
+    except asyncio.CancelledError:
+        pass
+
+    # Stop the image diplay.
+    await terminate_proc(proc)
 
 if __name__ == '__main__':
     asyncio.run(main())

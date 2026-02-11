@@ -41,12 +41,8 @@ class WeatherCollector:
     def __init__(self):
         self._callbacks : List[Callable[[WeatherStatus], None]] = []
 
-    async def start_listening(self):
+    async def listen(self):
         """Client code calls this override to request that the collector to start collecting data and delivering callbacks."""
-        pass
-
-    async def stop_listening(self):
-        """Client code calls this override to request that the collector stop collecting data."""
         pass
 
     def register_callback(self, callback):

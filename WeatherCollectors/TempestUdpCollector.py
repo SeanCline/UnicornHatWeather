@@ -237,33 +237,25 @@ class TempestUdpCollector(WeatherCollector):
             if self.collector._process_packet(msg):
                 self.collector._deliver_update(self.collector.status)
 
-    async def start_listening(self):
-        """Starts listening for UDP packets from the Tempest. This will run until stop_listening is called.."""
+    async def listen(self):
+        """Starts listening for UDP packets from the Tempest. This will run until cancelled."""
         self._udp_transport, _ = await asyncio.get_running_loop().create_datagram_endpoint(
             lambda: self._DatagramProtocol(self),
             local_addr=("0.0.0.0", UDP_PORT),
         )
 
-    async def stop_listening(self):
-        """Stops listening for UDP packets. Call this to clean up resources and stop collecting data."""
-        if self._udp_transport:
-            self._udp_transport.close()
-
+        while True:
+            try:
+                await asyncio.sleep(1000)
+            except asyncio.CancelledError:
+                self._udp_transport.close()
+                raise # Propagate the cancellation to the awaiter.
 
 async def debug_status():
     import config
     collector = TempestUdpCollector(config.tempest_udp_config)
-    await collector.start_listening()
     collector.register_callback(lambda status: print(status))
-    # Run until a keyboard interrupt, then clean up.
-    try:
-        while True:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
-        pass
-    except asyncio.CancelledError:
-        pass
-    await collector.stop_listening()
+    await collector.listen() # Run forever for debugging.
 
 if __name__ == "__main__":
     ws = WeatherStatus()

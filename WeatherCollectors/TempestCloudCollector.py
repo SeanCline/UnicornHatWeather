@@ -121,23 +121,18 @@ class TempestCloudCollector(WeatherCollector):
          
         return status
     
-    async def start_listening(self):
-        """Starts polling for weather updates. This will run until stop_listening is called.."""
-        if self._is_listening:
-            return # Already listening.
-        
-        self._is_listening = True
-        while self._is_listening:
+    async def listen(self):
+        """Starts polling for weather updates. This will run until cancelled."""
+
+        while True:
             try:
                 status = await self._get_current_weather_conditions()
                 self._deliver_update(status)
+                await asyncio.sleep(self._poll_interval)
+            except asyncio.CancelledError:
+                raise # Propagate task cancellations to the awaiter.
             except Exception as e:
-                print('Error getting weather data:', e)
-            await asyncio.sleep(self._poll_interval)
-
-    async def stop_listening(self):
-        """Stops polling for updates. Call this to clean up resources and stop collecting data."""
-        self._is_listening = False
+                print(f'Error getting weather data: {e}') # Suppress other types of exception.
 
 async def debug_status():
     import sys, os
@@ -145,18 +140,8 @@ async def debug_status():
     import config
 
     collector = TempestCloudCollector(config.tempest_cloud_station_name, config.tempest_cloud_token, config.tempest_cloud_poll_interval)
-    
     collector.register_callback(lambda status: print(status))
-    await collector.start_listening()
-    # Run until a keyboard interrupt, then clean up.
-    try:
-        while True:
-            await asyncio.sleep(1)
-    except KeyboardInterrupt:
-        pass
-    except asyncio.CancelledError:
-        pass
-    await collector.stop_listening()
+    await collector.listen() # Run forever for debugging.
 
 if __name__ == "__main__":
     ws = WeatherStatus()
