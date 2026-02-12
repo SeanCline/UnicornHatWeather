@@ -95,6 +95,7 @@ class TempestUdpCollector(WeatherCollector):
         self.status.source_timestamp = datetime.fromtimestamp(obs[idx["Time Epoch"]], tz=timezone.utc)
         self.status.illuminance_lux = Datapoint(obs[idx["Illuminance"]], 1.0)
         self.status.uv_index = Datapoint(obs[idx["UV"]], 1.0)
+        self.status.solar_radiation_wpm2 = Datapoint(obs[idx["Solar Radiation"]], 1.0)
         self.status.wind_avg_mps = Datapoint(obs[idx["Wind Avg"]], 1.0)
         self.status.rain_mm = Datapoint(obs[idx["Rain amount"]], 0.5) # Instantaneous rain amount is a bit noisy.
         self.status.precip_type = Datapoint(self._decode_precipitation(obs[idx["Precipitation Type"]]), 1.0)
@@ -252,6 +253,8 @@ class TempestUdpCollector(WeatherCollector):
                 raise # Propagate the cancellation to the awaiter.
 
 async def debug_status():
+    import sys, os
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
     import config
     collector = TempestUdpCollector(config.tempest_udp_config)
     collector.register_callback(lambda status: print(status))

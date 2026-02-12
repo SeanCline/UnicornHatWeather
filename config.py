@@ -2,7 +2,7 @@
 # Comment out these owm_* lines to disable OpenWeatherMap data collection.
 owm_poll_interval = 300.0 # Seconds between refreshing weather data.
 owm_config = {
-    'appid': 'YOUR_OPENWEATHERMAP_API_KEY',
+    'appid': '34c4435784adfa2f66e0a389a1e3acf1',
     'zip': '44060', # zip code
     
 # If in a region without a zip code, comment the zip line above and uncomment one of the following:
@@ -19,8 +19,14 @@ tempest_udp_config = {
 #   'allowed_station_sns': ['ST-00188648'], # Uncomment to allow weather only from specific station names.
 }
 
+# Weatherflow Tempest BLE configuration parameters.
+# Comment out these tempest_ble_* lines to disable local Tempest UDP data collection.
+tempest_ble_config = {
+   'station_mac': '6C:2A:DF:E1:F7:80', # Define which Tempest stations to listen for BLE packets.
+}
+
 # Comment out to these tempest_cloud_* lines to disable Tempest Cloud collection.
-#tempest_cloud_token = 'YOUR_TEMPESTWX_API_KEY' # Weatherflow Tempest Cloud API token from: https://tempestwx.com/settings/tokens 
+#tempest_cloud_token = '8fc25b0e-f970-478a-b4b5-166c37eaafbb' # Weatherflow Tempest Cloud API token from: https://tempestwx.com/settings/tokens 
 #tempest_cloud_poll_interval = 610 # Seconds between refreshing weather data.
 #tempest_cloud_station_name = '202637' # The station name to poll for data. Can be found in the URL when viewing the station: https://tempestwx.com/station/{station_name}
 

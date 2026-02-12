@@ -25,6 +25,7 @@ class WeatherStatus:
     illuminance_lux: Optional[Datapoint[float]] = None
     uv_index: Optional[Datapoint[float]] = None
     wind_avg_mps: Optional[Datapoint[float]] = None
+    solar_radiation_wpm2: Optional[Datapoint[float]] = None
 
     # Precip / lightning
     precip_type: Optional[Datapoint[str]] = None # "rain", "hail", None
