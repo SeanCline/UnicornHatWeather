@@ -55,6 +55,9 @@ class AggregateCollector(WeatherCollector):
         aggregate.source = 'aggregate'
         aggregate.host_timestamp = datetime.now(timezone.utc)
 
+        # Set of sources used to generate this aggregate.
+        sources = set()
+
         # For each Datapoint field in WeatherStatus, find the highest-quality datapoint from all collectors.
         for f in fields(WeatherStatus):
             if not is_datapoint(f):
@@ -75,18 +78,18 @@ class AggregateCollector(WeatherCollector):
                 age_seconds = (datetime.now(tz=status.host_timestamp.tzinfo) - status.host_timestamp).total_seconds()
                 if self._datapoint_max_age is None or timedelta(seconds=age_seconds) < self._datapoint_max_age:
                     aged_quality = datapoint.quality - age_seconds * self._quality_decay
-                    candidates.append((datapoint, aged_quality))
+                    candidates.append((datapoint, aged_quality, status))
             
             # Combine the field values into a single datapoint for the aggregate status.
             if len(candidates) == 0:
                 setattr(aggregate, f.name, None) # No data for this field from any collector.
                 continue
 
-            # Sort by aged quality, highest first.
-            candidates.sort(key=lambda c: c[1], reverse=True)
             # Find the max quality element in linear time
-            best_datapoint = max(candidates, key=lambda c: c[1])[0]
-            best_datapoint = candidates[0][0] # Take the highest-quality datapoint.
+            best_datapoint = max(candidates, key=lambda c: c[1])[0] # Take the highest-quality datapoint.
+            sources.add(best_datapoint[2])
             setattr(aggregate, f.name, Datapoint(best_datapoint.value, best_datapoint.quality))
+
+        aggregate.source = 'AggregateCollector{list(sources)}'
 
         return aggregate

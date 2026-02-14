@@ -17,8 +17,8 @@ class PacketFormat:
     fields : tuple[str, ...]
 
 STATUS_PACKET = PacketFormat(0x1A,
-    struct.Struct('<B 16x H x'),
-    ('packet_type', 'voltagex1000'),
+    struct.Struct('<B 11s 5x H x'),
+    ('packet_type', 'station_name', 'voltagex1000'),
 )
 
 SKY_PACKET = PacketFormat(0x52, # precip in the 4x padding?
@@ -63,6 +63,7 @@ class TempestBleCollector(WeatherCollector):
         publish = False
         if packet_type == STATUS_PACKET.packet_type:
             decoded = _unpack_packet(STATUS_PACKET, data)
+            self.status.source = decoded.station_name.decode("utf-8")
         elif packet_type == SKY_PACKET.packet_type:
             decoded = _unpack_packet(SKY_PACKET, data)
             self.status.illuminance_lux = Datapoint(decoded.illuminance_lux, 1.0)
@@ -93,9 +94,9 @@ class TempestBleCollector(WeatherCollector):
         if decoded is not None:
             # Got a new packet. Do some housekeeping.
             self.status.host_timestamp = self.status.source_timestamp = datetime.now(timezone.utc)
-            self.status.source = 'TempestBleCollector'
         
         if publish:
+            self.status.source = f'TempestBleCollector[{self.status.source}]'
             self._deliver_update(self.status)
 
     async def _notification_handler(self, sender : BleakGATTCharacteristic, data : bytearray):
