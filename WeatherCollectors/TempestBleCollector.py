@@ -2,7 +2,8 @@ import asyncio
 import collections
 import struct
 from dataclasses import dataclass
-from bleak import BleakClient
+from datetime import datetime, timezone
+from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from .WeatherCollector import WeatherCollector, WeatherStatus, Datapoint
 
@@ -59,6 +60,7 @@ class TempestBleCollector(WeatherCollector):
         
         packet_type = data[0]
         decoded = None
+        publish = False
         if packet_type == STATUS_PACKET.packet_type:
             decoded = _unpack_packet(STATUS_PACKET, data)
         elif packet_type == SKY_PACKET.packet_type:
@@ -79,6 +81,7 @@ class TempestBleCollector(WeatherCollector):
             self.status.lightning_count = Datapoint(decoded.lightning_strike_count, 1.0)
             self.status.lightning_distance = Datapoint(decoded.lightning_avg_distance, 1.0)
             self.status.pressure_mb = Datapoint(decoded.pressurex100 / 100.0, 1.0)
+            publish = True # We always get the AIR packet last, so only publish on AIR packets.
         #elif packet_type == WIND_INSTANT_PACKET.packet_type:
         #    decoded = _unpack_packet(WIND_INSTANT_PACKET, data)
 
@@ -91,6 +94,8 @@ class TempestBleCollector(WeatherCollector):
             # Got a new packet. Do some housekeeping.
             self.status.host_timestamp = self.status.source_timestamp = datetime.now(timezone.utc)
             self.status.source = 'TempestBleCollector'
+        
+        if publish:
             self._deliver_update(self.status)
 
     async def _notification_handler(self, sender : BleakGATTCharacteristic, data : bytearray):
@@ -101,8 +106,25 @@ class TempestBleCollector(WeatherCollector):
         """Starts listening for BLE notifications from the Tempest. This will run until cancelled."""
         while True:
             try:
-                async with BleakClient(self._station_mac) as client:
-                    print("Connected to TempestBLE")
+
+                #on_advertise = lambda dev, data: print(f'Advertise: {dev} {data}')
+                #async with BleakScanner(detection_callback=on_advertise) as scanner:
+                #    await asyncio.sleep(2000)
+
+                async with BleakClient(self._station_mac, timeout=120) as client:
+                    print(f'Connected to TempestBLE {self._station_mac}')
+
+                    for service in client.services:
+                        print(f"\nService {service.uuid}")
+
+                        for char in service.characteristics:
+                            props = ",".join(char.properties)
+                            print(f"  Characteristic {char.uuid}")
+                            print(f"    Properties: {props}")
+
+                            # Print descriptors too
+                            for desc in char.descriptors:
+                                print(f"    Descriptor {desc.uuid}")
 
                     await client.start_notify(
                         TEMPEST_CHARACTERISTIC_UUID,
@@ -112,9 +134,9 @@ class TempestBleCollector(WeatherCollector):
                     while client.is_connected:
                         await asyncio.sleep(15000)
             except Exception as ex:
-                print("Error in bluetooth connection. {ex}")
+                print(f'Error in bluetooth connection. {ex}')
                 await asyncio.sleep(60000) # Try to recover from the error later.
-            print("Disconnected from TempestBLE")
+            print('Disconnected from TempestBLE')
             
 
 async def debug_status():
