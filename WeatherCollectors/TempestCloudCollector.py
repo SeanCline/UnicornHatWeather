@@ -96,6 +96,15 @@ class TempestCloudCollector(WeatherCollector):
 
             if 'wind_avg' in obs:
                 status.wind_avg_mps = Datapoint(obs['wind_avg'], .5)
+
+            if 'wind_lull' in obs:
+                status.wind_lull_mps = Datapoint(obs['wind_lull'], .5)
+
+            if 'wind_gust' in obs:
+                status.wind_gust_mps = Datapoint(obs['wind_gust'], .5)
+
+            if 'wind_direction' in obs:
+                status.wind_dir_deg = Datapoint(obs['wind_direction'], .5)
             
             if 'precip' in obs:
                 status.precip_type = Datapoint(self._decode_precipitation(obs['precip']), 0.5)

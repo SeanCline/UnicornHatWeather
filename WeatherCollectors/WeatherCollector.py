@@ -25,12 +25,19 @@ class WeatherStatus:
     illuminance_lux: Optional[Datapoint[float]] = None
     uv_index: Optional[Datapoint[float]] = None
     wind_avg_mps: Optional[Datapoint[float]] = None
+    wind_lull_mps: Optional[Datapoint[float]] = None
+    wind_gust_mps: Optional[Datapoint[float]] = None
+    wind_dir_deg: Optional[Datapoint[float]] = None
+    solar_radiation_wpm2: Optional[Datapoint[float]] = None
+    wind_sample_interval_s: Optional[Datapoint[int]] = None
 
     # Precip / lightning
     precip_type: Optional[Datapoint[str]] = None # "rain", "hail", None
     rain_mm: Optional[Datapoint[float]] = None
     lightning_count: Optional[Datapoint[int]] = None
     lightning_distance: Optional[Datapoint[float]] = None
+    battery_v: Optional[Datapoint[float]] = None
+    report_interval_min: Optional[Datapoint[int]] = None
 
     # Inferred readings.
     condition_string: Optional[Datapoint[str]] = None

@@ -88,6 +88,8 @@ class TempestUdpCollector(WeatherCollector):
         self.status.pressure_mb = Datapoint(obs[idx["Station Pressure"]], 1.0)
         self.status.lightning_count = Datapoint(obs[idx["Lightning Strike Count"]], 1.0)
         self.status.lightning_distance = Datapoint(obs[idx["Lightning Strike Avg Distance"]], 1.0)
+        self.status.battery_v = Datapoint(obs[idx["Battery"]], 1.0)
+        self.status.report_interval_min = Datapoint(obs[idx["Report Interval"]], 1.0)
         
     def _handle_obs_sky(self, obs, idx = OBS_SKY_IDX):
         self.status.source = "obs_sky"
@@ -95,7 +97,14 @@ class TempestUdpCollector(WeatherCollector):
         self.status.source_timestamp = datetime.fromtimestamp(obs[idx["Time Epoch"]], tz=timezone.utc)
         self.status.illuminance_lux = Datapoint(obs[idx["Illuminance"]], 1.0)
         self.status.uv_index = Datapoint(obs[idx["UV"]], 1.0)
+        self.status.solar_radiation_wpm2 = Datapoint(obs[idx["Solar Radiation"]], 1.0)
         self.status.wind_avg_mps = Datapoint(obs[idx["Wind Avg"]], 1.0)
+        self.status.wind_lull_mps = Datapoint(obs[idx["Wind Lull"]], 1.0)
+        self.status.wind_gust_mps = Datapoint(obs[idx["Wind Gust"]], 1.0)
+        self.status.wind_dir_deg = Datapoint(obs[idx["Wind Direction"]], 1.0)
+        self.status.wind_sample_interval_s = Datapoint(obs[idx["Wind Sample Interval"]], 1.0)
+        self.status.battery_v = Datapoint(obs[idx["Battery"]], 1.0)
+        self.status.report_interval_min = Datapoint(obs[idx["Report Interval"]], 1.0)
         self.status.rain_mm = Datapoint(obs[idx["Rain amount"]], 0.5) # Instantaneous rain amount is a bit noisy.
         self.status.precip_type = Datapoint(self._decode_precipitation(obs[idx["Precipitation Type"]]), 1.0)
         
@@ -197,7 +206,7 @@ class TempestUdpCollector(WeatherCollector):
         t = msg.get("type")
         obs = msg.get("obs")
         if not obs:
-            return
+            return False
 
         # obs is a list of lists. Unwrap it.
         obs = obs[0]
@@ -235,6 +244,7 @@ class TempestUdpCollector(WeatherCollector):
 
             # Process the packet and deliver updates to callbacks if there is new data.
             if self.collector._process_packet(msg):
+                print(msg)
                 self.collector._deliver_update(self.collector.status)
 
     async def listen(self):
@@ -252,6 +262,8 @@ class TempestUdpCollector(WeatherCollector):
                 raise # Propagate the cancellation to the awaiter.
 
 async def debug_status():
+    import sys, os
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
     import config
     collector = TempestUdpCollector(config.tempest_udp_config)
     collector.register_callback(lambda status: print(status))

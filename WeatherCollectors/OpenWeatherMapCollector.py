@@ -49,6 +49,12 @@ class OpenWeatherMapCollector(WeatherCollector):
 
             if 'speed' in wind:
                 status.wind_avg_mps = Datapoint(wind['speed'], .75) # I trust the OWM wind speed more than a ground-mounted sensor.
+
+            if 'deg' in wind:
+                status.wind_dir_deg = Datapoint(wind['deg'], .75)
+
+            if 'gust' in wind:
+                status.wind_gust_mps = Datapoint(wind['gust'], .75)
             
             if 'description' in weather:
                 status.condition_string = Datapoint(weather['description'], 1.0) # Real weather services use FAR more reliable models for conditions than a local sensor.

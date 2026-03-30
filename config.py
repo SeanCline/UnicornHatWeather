@@ -19,6 +19,12 @@ tempest_udp_config = {
 #   'allowed_station_sns': ['ST-00188648'], # Uncomment to allow weather only from specific station names.
 }
 
+# Weatherflow Tempest BLE configuration parameters.
+# Comment out these tempest_ble_* lines to disable local Tempest UDP data collection.
+tempest_ble_config = {
+   'station_mac': '12:34:56:78:F9:AB', # Define which Tempest stations to listen for BLE packets.
+}
+
 # Comment out to these tempest_cloud_* lines to disable Tempest Cloud collection.
 #tempest_cloud_token = 'YOUR_TEMPESTWX_API_KEY' # Weatherflow Tempest Cloud API token from: https://tempestwx.com/settings/tokens 
 #tempest_cloud_poll_interval = 610 # Seconds between refreshing weather data.
